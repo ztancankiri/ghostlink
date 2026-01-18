@@ -2,19 +2,42 @@ const WebSocket = require('ws');
 const net = require('net');
 const { createControlPacket, createDataPacket, createClosePacket, parsePacket } = require('./lib/protocol');
 
+const fs = require('fs');
 const { parseArgs } = require('util');
 
 const { values } = parseArgs({
     options: {
         port: { type: 'string', short: 'p', default: '8080' },
         host: { type: 'string', short: 'h', default: '127.0.0.1' }, // Default to localhost for security
-        tunnel: { type: 'string', short: 't', default: 'ws://localhost:8081' },
+        tunnel: { type: 'string', short: 't', default: 'wss://localhost:8081' }, // Default to wss://
+        key: { type: 'string', short: 'k', default: 'certs/client.key' },
+        cert: { type: 'string', short: 'c', default: 'certs/client.crt' },
+        ca: { type: 'string', short: 'a', default: 'certs/ca.crt' },
     },
 });
 
 const PROXY_PORT = parseInt(values.port);
 const PROXY_HOST = values.host;
-const TUNNEL_URL = values.tunnel;
+const TUNNEL_URL = values.tunnel.replace('ws://', 'wss://');
+
+// Helper to get WS options
+function getWsOptions() {
+    if (fs.existsSync(values.key) && fs.existsSync(values.cert) && fs.existsSync(values.ca)) {
+        console.log('🔒 Security: Enabling mTLS for connection');
+        return {
+            key: fs.readFileSync(values.key),
+            cert: fs.readFileSync(values.cert),
+            ca: fs.readFileSync(values.ca),
+            rejectUnauthorized: true, // Verify server cert
+        };
+    } else {
+        console.warn('⚠️ Security: Certificates not found. Attempting insecure connection, this might fail if server requires mTLS!');
+        // return {}; 
+        // For self-signed certs without mTLS locally, we might need rejectUnauthorized: false?
+        // But if server is robust, it requires mTLS.
+        return { rejectUnauthorized: false };
+    }
+}
 
 let ws;
 let packetQueue = [];
@@ -23,7 +46,7 @@ let nextId = 1;
 
 function connectToTunnel() {
     console.log(`Connecting to Tunnel Server at ${TUNNEL_URL}...`);
-    ws = new WebSocket(TUNNEL_URL);
+    ws = new WebSocket(TUNNEL_URL, getWsOptions());
 
     ws.on('open', () => {
         console.log('Connected to Tunnel Server');

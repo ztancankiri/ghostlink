@@ -70,6 +70,33 @@ Configure your browser proxy settings based on the local port you chose.
 
 ---
 
+## 🔒 Security (mTLS)
+
+GhostLink supports Mutual TLS (mTLS) to secure the tunnel. This ensures that only authorized clients (Relays) can connect to the Server.
+
+### Generating Certificates
+Use the included helper script:
+```bash
+./generate_certs.sh
+```
+This generates self-signed CA and certificates in the `certs/` directory.
+
+### Running with mTLS
+
+**Server:**
+```bash
+node server.js -p 8081 -k certs/server.key -c certs/server.crt -a certs/ca.crt
+```
+
+**Client:**
+```bash
+node client.js -p 8080 -t wss://localhost:8081 -k certs/client.key -c certs/client.crt -a certs/ca.crt
+```
+
+> **Note**: If certificates are present in `certs/` (default paths), mTLS is enabled automatically. If not found, it falls back to insecure mode (HTTP/WS).
+
+---
+
 ## ⚙️ Configuration
 
 GhostLink uses command-line arguments:
@@ -77,11 +104,17 @@ GhostLink uses command-line arguments:
 ### Server (`server.js`)
 *   `-p, --port` : Port to listen on (Default: `8081`)
 *   `-h, --host` : Host/IP to bind to (Default: `0.0.0.0`)
+*   `-k, --key`  : Path to Server Private Info (Default: `certs/server.key`)
+*   `-c, --cert` : Path to Server Certificate (Default: `certs/server.crt`)
+*   `-a, --ca`   : Path to CA Certificate (Default: `certs/ca.crt`)
 
 ### Client (`client.js`)
 *   `-p, --port`   : Local proxy port (Default: `8080`)
 *   `-h, --host`   : Local bind address (Default: `127.0.0.1`)
-*   `-t, --tunnel` : WebSocket URL of the remote server (Default: `ws://localhost:8081`)
+*   `-t, --tunnel` : WebSocket URL of the remote server (Default: `wss://localhost:8081`)
+*   `-k, --key`    : Path to Client Private Key (Default: `certs/client.key`)
+*   `-c, --cert`   : Path to Client Certificate (Default: `certs/client.crt`)
+*   `-a, --ca`     : Path to CA Certificate (Default: `certs/ca.crt`)
 
 ---
 

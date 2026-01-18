@@ -2,21 +2,45 @@ const WebSocket = require('ws');
 const net = require('net');
 const { createControlPacket, createDataPacket, createClosePacket, parsePacket } = require('./lib/protocol');
 
+const https = require('https');
+const fs = require('fs');
+
 const { parseArgs } = require('util');
 
 const { values } = parseArgs({
     options: {
         port: { type: 'string', short: 'p', default: '8081' },
         host: { type: 'string', short: 'h', default: '0.0.0.0' },
+        key: { type: 'string', short: 'k', default: 'certs/server.key' },
+        cert: { type: 'string', short: 'c', default: 'certs/server.crt' },
+        ca: { type: 'string', short: 'a', default: 'certs/ca.crt' },
     },
 });
 
 const PORT = parseInt(values.port);
 const HOST = values.host;
 
-const wss = new WebSocket.Server({ port: PORT, host: HOST });
+let server;
 
-console.log(`GhostLink Server running on ${HOST}:${PORT}`);
+if (fs.existsSync(values.key) && fs.existsSync(values.cert) && fs.existsSync(values.ca)) {
+    console.log('🔒 Security: Enabling mTLS');
+    server = https.createServer({
+        key: fs.readFileSync(values.key),
+        cert: fs.readFileSync(values.cert),
+        ca: fs.readFileSync(values.ca),
+        requestCert: true,
+        rejectUnauthorized: true, // Force mTLS
+    });
+} else {
+    console.warn('⚠️ Security: Certificates not found. Falling back to insecure HTTP!');
+    server = require('http').createServer();
+}
+
+const wss = new WebSocket.Server({ server });
+
+server.listen(PORT, HOST, () => {
+    console.log(`GhostLink Server running on wss://${HOST}:${PORT}`);
+});
 
 wss.on('connection', (ws) => {
     console.log('New Relay connected');
