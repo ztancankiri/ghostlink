@@ -119,6 +119,35 @@ This will pull `ztancankiri/ghostlink-server:latest` and start the server on por
 docker-compose logs -f
 ```
 
+
+---
+
+## 📦 Standalone Client (Executables)
+
+You can run the GhostLink Relay without installing Node.js by using the standalone executables.
+
+### Building
+```bash
+npm run build
+```
+This generates binaries in the `dist/` folder:
+-   `ghostlink-linux`
+-   `ghostlink-macos`
+-   `ghostlink-win.exe`
+
+### Usage
+Directly run the executable for your OS:
+
+**Linux/macOS:**
+```bash
+./dist/ghostlink-macos -p 8080 -t wss://example.com:8081 -k certs/client.key -c certs/client.crt -a certs/ca.crt
+```
+
+**Windows:**
+```cmd
+dist\ghostlink-win.exe -p 8080 -t wss://example.com:8081 -k certs/client.key -c certs/client.crt -a certs/ca.crt
+```
+
 ---
 
 ## ⚙️ Configuration

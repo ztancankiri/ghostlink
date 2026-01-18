@@ -6,3 +6,4 @@ certs/
 *.crt
 *.csr
 *.pem
+dist/

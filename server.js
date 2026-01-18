@@ -17,17 +17,20 @@ const { values } = parseArgs({
     },
 });
 
-const PORT = parseInt(values.port);
-const HOST = values.host;
+const PORT = parseInt(values.port || '8081');
+const HOST = values.host || '0.0.0.0';
+const KEY_PATH = values.key || 'certs/server.key';
+const CERT_PATH = values.cert || 'certs/server.crt';
+const CA_PATH = values.ca || 'certs/ca.crt';
 
 let server;
 
-if (fs.existsSync(values.key) && fs.existsSync(values.cert) && fs.existsSync(values.ca)) {
+if (fs.existsSync(KEY_PATH) && fs.existsSync(CERT_PATH) && fs.existsSync(CA_PATH)) {
     console.log('🔒 Security: Enabling mTLS');
     server = https.createServer({
-        key: fs.readFileSync(values.key),
-        cert: fs.readFileSync(values.cert),
-        ca: fs.readFileSync(values.ca),
+        key: fs.readFileSync(KEY_PATH),
+        cert: fs.readFileSync(CERT_PATH),
+        ca: fs.readFileSync(CA_PATH),
         requestCert: true,
         rejectUnauthorized: true, // Force mTLS
     });

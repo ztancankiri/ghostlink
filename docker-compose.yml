@@ -1,16 +1,11 @@
-version: '3.8'
-
 services:
   server:
-    # build: .
     image: ztancankiri/ghostlink-server:latest
     container_name: ghostlink-server
     restart: unless-stopped
     ports:
-      - "8081:8081"
+      - 8081:8081
     volumes:
-      # Mount the certs directory from the host to the container which contains:
-      # server.key, server.crt, ca.crt
       - ./certs:/app/certs:ro
     environment:
       - NODE_ENV=production

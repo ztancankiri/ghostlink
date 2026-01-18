@@ -13,21 +13,25 @@ const { values } = parseArgs({
         key: { type: 'string', short: 'k', default: 'certs/client.key' },
         cert: { type: 'string', short: 'c', default: 'certs/client.crt' },
         ca: { type: 'string', short: 'a', default: 'certs/ca.crt' },
+        // Strict not supported in node 18.5
     },
 });
 
-const PROXY_PORT = parseInt(values.port);
-const PROXY_HOST = values.host;
-const TUNNEL_URL = values.tunnel.replace('ws://', 'wss://');
+const PROXY_PORT = parseInt(values.port || '8080');
+const PROXY_HOST = values.host || '127.0.0.1';
+const TUNNEL_URL = (values.tunnel || 'wss://localhost:8081').replace('ws://', 'wss://');
+const KEY_PATH = values.key || 'certs/client.key';
+const CERT_PATH = values.cert || 'certs/client.crt';
+const CA_PATH = values.ca || 'certs/ca.crt';
 
 // Helper to get WS options
 function getWsOptions() {
-    if (fs.existsSync(values.key) && fs.existsSync(values.cert) && fs.existsSync(values.ca)) {
+    if (fs.existsSync(KEY_PATH) && fs.existsSync(CERT_PATH) && fs.existsSync(CA_PATH)) {
         console.log('🔒 Security: Enabling mTLS for connection');
         return {
-            key: fs.readFileSync(values.key),
-            cert: fs.readFileSync(values.cert),
-            ca: fs.readFileSync(values.ca),
+            key: fs.readFileSync(KEY_PATH),
+            cert: fs.readFileSync(CERT_PATH),
+            ca: fs.readFileSync(CA_PATH),
             rejectUnauthorized: true, // Verify server cert
         };
     } else {
@@ -77,7 +81,14 @@ function connectToTunnel() {
         setTimeout(connectToTunnel, 3000);
     });
 
-    ws.on('error', console.error);
+    ws.on('error', (err) => {
+        if (err.code === 'ECONNREFUSED') {
+            console.error(`❌ Connection Failed: Could not connect to Tunnel Server at ${TUNNEL_URL}`);
+            console.error(`   Ensure the server is running and accessible.`);
+        } else {
+            console.error('⚠️ Tunnel Error:', err.message);
+        }
+    });
 }
 
 function sendPacket(packet) {
