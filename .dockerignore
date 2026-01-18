@@ -1,0 +1,10 @@
+node_modules
+.git
+.gitignore
+*.log
+test.sh
+generate_certs.sh
+certs
+LICENSE
+README.md
+client.js

@@ -95,6 +95,28 @@ node client.js -p 8080 -t wss://localhost:8081 -k certs/client.key -c certs/clie
 
 > **Note**: If certificates are present in `certs/` (default paths), mTLS is enabled automatically. If not found, it falls back to insecure mode (HTTP/WS).
 
+
+---
+
+## 🐳 Docker Deployment
+
+You can deploy the **GhostLink Server** using Docker and Docker Compose.
+
+### 1. Prerequisites
+*   Docker & Docker Compose installed.
+*   Certificates generated in `./certs` (run `./generate_certs.sh`).
+
+### 2. Run with Docker Compose
+```bash
+docker-compose up -d
+```
+This will start the server on port `8081` with mTLS enabled, mounting your local `./certs` directory into the container.
+
+### 3. Check Logs
+```bash
+docker-compose logs -f
+```
+
 ---
 
 ## ⚙️ Configuration
