@@ -107,10 +107,12 @@ You can deploy the **GhostLink Server** using Docker and Docker Compose.
 *   Certificates generated in `./certs` (run `./generate_certs.sh`).
 
 ### 2. Run with Docker Compose
+GhostLink provides an official multi-arch image (amd64/arm64) on Docker Hub.
+
 ```bash
 docker-compose up -d
 ```
-This will start the server on port `8081` with mTLS enabled, mounting your local `./certs` directory into the container.
+This will pull `ztancankiri/ghostlink-server:latest` and start the server on port `8081` with mTLS enabled.
 
 ### 3. Check Logs
 ```bash

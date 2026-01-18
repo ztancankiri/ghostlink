@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   server:
-    build: .
-    image: ghostlink-server:latest
+    # build: .
+    image: ztancankiri/ghostlink-server:latest
     container_name: ghostlink-server
     restart: unless-stopped
     ports:
