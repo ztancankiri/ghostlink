@@ -23,4 +23,7 @@ openssl x509 -req -days 365 -in client.csr -CA ca.crt -CAkey ca.key -set_serial 
 # 6. Set permissions
 chmod 600 *.key
 
+# 7. Cleanup CSRs
+rm *.csr
+
 echo "Cookies... I mean Certificates generated in certs/"
